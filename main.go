@@ -1,28 +1,43 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/someshubham/gator/internal/config"
+	"github.com/someshubham/gator/internal/database"
 )
 
 func main() {
 
-	s := state{
-		config: &config.Config{
-			DbUrl: "postgres://example",
-		},
+	cfg, err := config.Read()
+	if err != nil {
+		fmt.Println("Unable to read config")
+		return
 	}
 
-	s.config.SetUser("")
+	db, err := sql.Open("postgres", cfg.DbUrl)
+	if err != nil {
+		fmt.Println("Unable to open DB")
+		return
+	}
 
+	dbQueries := database.New(db)
+
+	s := state{
+		config: &cfg,
+		db:     dbQueries,
+	}
 	cmdList := commands{
 		cmd: make(map[string]func(*state, command) error),
 	}
 	cmdList.register("login", handlerLogin)
+	cmdList.register("register", handlerRegister)
 
-	err := cmdList.run(&s, purifyArgs(os.Args))
+	err = cmdList.run(&s, purifyArgs(os.Args))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

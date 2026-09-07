@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
 )
 
 type command struct {
@@ -36,7 +38,14 @@ func handlerLogin(s *state, cmd command) error {
 		return fmt.Errorf("the login handler expects a single argument, the username")
 	}
 
-	err := s.config.SetUser(cmd.args[0])
+	usr, err := s.db.GetUser(context.Background(), cmd.args[0])
+
+	if err != nil {
+		fmt.Printf("Unable to login to unknown user\n%s", err.Error())
+		os.Exit(1)
+	}
+
+	err = s.config.SetUser(usr.Name)
 
 	if err != nil {
 		return err
