@@ -39,6 +39,8 @@ func main() {
 	cmdList.register("reset", handlerReset)
 	cmdList.register("users", handlerUsers)
 	cmdList.register("agg", handlerAgg)
+	cmdList.register("addfeed", handlerAddFeed)
+	cmdList.register("feeds", handlerFeeds)
 
 	err = cmdList.run(&s, purifyArgs(os.Args))
 	if err != nil {
