@@ -41,6 +41,8 @@ func main() {
 	cmdList.register("agg", handlerAgg)
 	cmdList.register("addfeed", handlerAddFeed)
 	cmdList.register("feeds", handlerFeeds)
+	cmdList.register("follow", handlerFollow)
+	cmdList.register("following", handlerFollowing)
 
 	err = cmdList.run(&s, purifyArgs(os.Args))
 	if err != nil {
