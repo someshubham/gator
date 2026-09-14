@@ -10,18 +10,11 @@ import (
 	"github.com/someshubham/gator/internal/database"
 )
 
-func handlerAddFeed(s *state, c command) error {
+func handlerAddFeed(s *state, c command, usr database.User) error {
 	if len(c.args) != 2 {
 		fmt.Println("Required name and url of the feed")
 		os.Exit(1)
 	}
-
-	usr, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		os.Exit(1)
-	}
-
 	feedName := c.args[0]
 	url := c.args[1]
 

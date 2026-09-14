@@ -10,19 +10,12 @@ import (
 	"github.com/someshubham/gator/internal/database"
 )
 
-func handlerFollow(s *state, c command) error {
+func handlerFollow(s *state, c command, usr database.User) error {
 
 	if len(c.args) == 0 {
 		fmt.Println("Need a url to run follow command")
 		os.Exit(1)
 	}
-
-	usr, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		fmt.Printf("Unable to find the user\n%s\n", err.Error())
-		os.Exit(1)
-	}
-
 	url := c.args[0]
 
 	feed, err := s.db.GetFeedByUrl(context.Background(), url)

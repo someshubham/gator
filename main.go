@@ -39,10 +39,10 @@ func main() {
 	cmdList.register("reset", handlerReset)
 	cmdList.register("users", handlerUsers)
 	cmdList.register("agg", handlerAgg)
-	cmdList.register("addfeed", handlerAddFeed)
+	cmdList.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	cmdList.register("feeds", handlerFeeds)
-	cmdList.register("follow", handlerFollow)
-	cmdList.register("following", handlerFollowing)
+	cmdList.register("follow", middlewareLoggedIn(handlerFollow))
+	cmdList.register("following", middlewareLoggedIn(handlerFollowing))
 
 	err = cmdList.run(&s, purifyArgs(os.Args))
 	if err != nil {
