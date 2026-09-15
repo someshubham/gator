@@ -4,21 +4,17 @@ import (
 	"context"
 	"fmt"
 	"html"
-	"os"
+	"time"
 
 	"github.com/someshubham/gator/data"
+	"github.com/someshubham/gator/internal/database"
 )
 
-func handlerAgg(_ *state, _ command) error {
-	rssFeed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		os.Exit(1)
+func handlerAgg(s *state, _ command) error {
+	ticker := time.NewTicker(time.Duration(60 * time.Second))
+	for ; ; <-ticker.C {
+		scrapeFeeds(*s.db)
 	}
-
-	fmt.Println(purifyFeed(*rssFeed))
-	return nil
 }
 
 func purifyFeed(rssFeed data.RSSFeed) data.RSSFeed {
@@ -39,4 +35,35 @@ func purifyFeed(rssFeed data.RSSFeed) data.RSSFeed {
 	}
 
 	return feed
+}
+
+func scrapeFeeds(db database.Queries) error {
+
+	nextFeed, err := db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+
+	err = db.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
+		UpdatedAt: time.Now(),
+		ID:        nextFeed.ID,
+	})
+
+	if err != nil {
+		return fmt.Errorf("Unable to mark feed as fetched")
+	}
+
+	rssFeed, err := fetchFeed(context.Background(), nextFeed.Url)
+
+	if err != nil {
+		return err
+	}
+
+	purifiedFeed := purifyFeed(*rssFeed)
+
+	for _, item := range purifiedFeed.Channel.Item {
+		fmt.Println(item.Title)
+	}
+
+	return nil
 }
