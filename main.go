@@ -43,6 +43,7 @@ func main() {
 	cmdList.register("feeds", handlerFeeds)
 	cmdList.register("follow", middlewareLoggedIn(handlerFollow))
 	cmdList.register("following", middlewareLoggedIn(handlerFollowing))
+	cmdList.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 
 	err = cmdList.run(&s, purifyArgs(os.Args))
 	if err != nil {
