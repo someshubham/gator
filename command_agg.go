@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"html"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/someshubham/gator/data"
 	"github.com/someshubham/gator/internal/database"
 )
@@ -62,8 +64,48 @@ func scrapeFeeds(db database.Queries) error {
 	purifiedFeed := purifyFeed(*rssFeed)
 
 	for _, item := range purifiedFeed.Channel.Item {
-		fmt.Println(item.Title)
+		fmt.Println(item.PubDate)
+		db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			FeedID:      nextFeed.ID,
+			Title:       getSqlString(item.Title),
+			Description: getSqlString(item.Description),
+			Url:         item.Link,
+			PublishedAt: getSqlTime(item.PubDate),
+		})
 	}
 
 	return nil
+}
+
+func getSqlString(item string) sql.NullString {
+	str := sql.NullString{Valid: false}
+
+	if len(item) != 0 {
+		str = sql.NullString{
+			String: item,
+			Valid:  true,
+		}
+	}
+
+	return str
+}
+
+func getSqlTime(timeStr string) sql.NullTime {
+	layout := "2026-01-02 15:04:05"
+	parsedTime, err := time.Parse(layout, timeStr)
+	if err != nil {
+		fmt.Println("Error parsing time:", err)
+		return sql.NullTime{Valid: false}
+	}
+
+	// 2. Wrap into sql.NullTime
+	nullTime := sql.NullTime{
+		Time:  parsedTime,
+		Valid: true, // Tells the database driver this is NOT a NULL value
+	}
+
+	return nullTime
 }

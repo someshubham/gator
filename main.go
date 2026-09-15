@@ -44,6 +44,7 @@ func main() {
 	cmdList.register("follow", middlewareLoggedIn(handlerFollow))
 	cmdList.register("following", middlewareLoggedIn(handlerFollowing))
 	cmdList.register("unfollow", middlewareLoggedIn(handlerUnfollow))
+	cmdList.register("browse", middlewareLoggedIn(handlerBrowse))
 
 	err = cmdList.run(&s, purifyArgs(os.Args))
 	if err != nil {
